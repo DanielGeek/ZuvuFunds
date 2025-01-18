@@ -47,14 +47,14 @@ contract ZuvuGovernance is ReentrancyGuard, AccessControl {
         _setupRole(EXECUTOR_ROLE, msg.sender);
     }
 
-    function propose(uint256[] memory _splits, address[] memory _recipients) 
-        external 
-        onlyRole(PROPOSER_ROLE) 
+    function propose(uint256[] memory _splits, address[] memory _recipients)
+        external
+        onlyRole(PROPOSER_ROLE)
         returns (uint256)
     {
         require(_splits.length == _recipients.length, "Invalid proposal parameters");
         require(_splits.length > 0, "Empty proposal");
-        
+
         uint256 totalSplit = 0;
         for (uint256 i = 0; i < _splits.length; i++) {
             totalSplit += _splits[i];
@@ -77,17 +77,17 @@ contract ZuvuGovernance is ReentrancyGuard, AccessControl {
     function delegate(address delegatee) external {
         require(delegatee != msg.sender, "Cannot delegate to self");
         address currentDelegate = delegates[msg.sender];
-        
+
         // Remove power from current delegate
         if (currentDelegate != address(0)) {
             delegatedPower[currentDelegate] -= token.balanceOf(msg.sender);
         }
-        
+
         // Add power to new delegate
         if (delegatee != address(0)) {
             delegatedPower[delegatee] += token.balanceOf(msg.sender);
         }
-        
+
         delegates[msg.sender] = delegatee;
         emit DelegateChanged(msg.sender, currentDelegate, delegatee);
     }
@@ -110,11 +110,7 @@ contract ZuvuGovernance is ReentrancyGuard, AccessControl {
         emit VoteCast(proposalId, msg.sender, weight);
     }
 
-    function executeProposal(uint256 proposalId, uint256 amount) 
-        external 
-        nonReentrant 
-        onlyRole(EXECUTOR_ROLE) 
-    {
+    function executeProposal(uint256 proposalId, uint256 amount) external nonReentrant onlyRole(EXECUTOR_ROLE) {
         Proposal storage proposal = proposals[proposalId];
         require(block.timestamp > proposal.endTime, "Voting period not ended");
         require(!proposal.executed, "Already executed");
@@ -125,18 +121,15 @@ contract ZuvuGovernance is ReentrancyGuard, AccessControl {
         // Execute transfers based on splits
         for (uint256 i = 0; i < proposal.splits.length; i++) {
             uint256 transferAmount = (amount * proposal.splits[i]) / 100;
-            require(
-                token.transferFrom(msg.sender, proposal.recipients[i], transferAmount),
-                "Transfer failed"
-            );
+            require(token.transferFrom(msg.sender, proposal.recipients[i], transferAmount), "Transfer failed");
         }
 
         emit ProposalExecuted(proposalId);
     }
 
-    function getProposalDetails(uint256 proposalId) 
-        external 
-        view 
+    function getProposalDetails(uint256 proposalId)
+        external
+        view
         returns (
             address proposer,
             uint256 startTime,

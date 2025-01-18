@@ -21,7 +21,7 @@ contract DeployScript is Script {
         ZuvuGovernance zuvuGovernance = new ZuvuGovernance(address(token));
 
         // Mint tokens for deployer
-        token.mint(deployer, 1_000_000 * 10**18);
+        token.mint(deployer, 1_000_000 * 10 ** 18);
 
         // Approve contracts to use deployer's tokens
         vm.prank(deployer);
